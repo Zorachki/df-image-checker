@@ -11,32 +11,29 @@ import (
 	"github.com/fatih/color"
 )
 
+// envImport checks environment variables and returns them if they exist
+func envImport(key string, defaultVar string) string {
+	finVar, exists := os.LookupEnv(key)
+	if exists {
+		exists = true
+	} else {
+		finVar = defaultVar
+	}
+	return finVar
+}
+
 func main() {
 
 	var filePath = "./Dockerfile"
 	var hardCheck = "false"
 	var regPattern = "registry.gitlab.com/mycompany.de/infrastructure/images/*"
-	color.NoColor = false // Allow to color output in CI job logs (Gitlab-CI, GitHub Actions)
+	color.NoColor = false // Allow to color output in CI job logs (Gitlab-CI, GitHub Actions, etc)
 
-	filePathEnv, exists := os.LookupEnv("DOCKERFILE_PATH") // Use if Dockerfile path is defined by external env
-	if exists {
-		exists = true
-	} else {
-		filePathEnv = filePath
-	}
-	hardCheckEnv, exists := os.LookupEnv("HARD_CHECK") // "true" – if Dockerfile has external image, get exit 1
-	if exists {
-		exists = true
-	} else {
-		hardCheckEnv = hardCheck
-	}
-	regPatternEnv, exists := os.LookupEnv("REG_PATTERN") // Use if registry pattern is defined by external env
-	if exists {
-		exists = true
-	} else {
-		regPatternEnv = regPattern
-	}
+	filePathEnv := envImport("DOCKERFILE_PATH", filePath)
+	hardCheckEnv := envImport("HARD_CHECK", hardCheck)
+	regPatternEnv := envImport("REG_PATTERN", regPattern)
 
+	// CLI block
 	filePathPtr := flag.String("f", filePathEnv, "Path to Dockerfile")                           // "file" flag
 	hardCheckPtr := flag.String("m", hardCheckEnv, "Enable(true) and disable(false) Hard check") // "hard-check" flag
 	regPtr := flag.String("p", regPatternEnv, "Pattern to find correct image")                   // "pattern" flag
